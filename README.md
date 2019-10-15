@@ -1,17 +1,16 @@
 # login
 
-A new Flutter project.
+Mi primer proyecto en Flutter
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Tras escuchar algunos podcast me anime a lanzar un reto de un desarrollo nuevo en una tecnología desconocida.
+Si vamos a saltar, vamos a hacerlo a lo grande. 
 
-A few resources to get you started if this is your first Flutter project:
+Para mi proyecto me ha ayudado:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- [La versión en español (no esta completa) de Flutter](https://flutter-es.io/)
+- [El podcast de Guillermo García](https://guillermogarcia.es/podcast/)
+- [El tutorial del login y crud en Medium](https://medium.com/flutterpub/flutter-how-to-do-user-login-with-firebase-a6af760b14d5)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
 # fixxis
