@@ -22,6 +22,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
   String _email;
   String _password;
   String _errorMessage;
+  int _radioValue = 0;
     String err = "";
 
   // Initial form is login form
@@ -55,16 +56,16 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           userId = await widget.auth.signUp(_email, _password);
           widget.auth.sendEmailVerification();
           _showVerifyEmailSentDialog();
+          _database.reference().child("user").push().set({
+            "correo"  : _email,
+            "perfil"  : _radioValue
+          });
           print('Signed up user: $userId');
         }
         setState(() {
           _isLoading = false;
         });
 
-        _database.reference().child("user").push().set({
-          "correo"  : _email,
-          "perfil"  : "trabajador" // FIXME: añadir validación y tipo de perfil
-        });
         if (userId.length > 0 && userId != null && _formMode == FormMode.LOGIN) {
           widget.onSignedIn();
         }
@@ -113,6 +114,13 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
     _errorMessage = "";
     setState(() {
       _formMode = FormMode.LOGIN;
+    });
+  }
+
+  void _handleRadioValueChange(int value) {
+    setState(() {
+      _radioValue = value;
+      print(_radioValue);
     });
   }
 
@@ -178,6 +186,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
               _showLogo(),
               _showEmailInput(),
               _showPasswordInput(),
+              _showTipoPerfil(),
               _showPrimaryButton(),
               _showSecondaryButton(),
               _showErrorMessage(),
@@ -220,7 +229,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   Widget _showEmailInput() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0.0, 100.0, 0.0, 0.0),
+      padding: const EdgeInsets.fromLTRB(0.0, 80.0, 0.0, 0.0),
       child: new TextFormField(
         maxLines: 1,
         keyboardType: TextInputType.emailAddress,
@@ -301,5 +310,41 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
             onPressed: _validateAndSubmit,
           ),
         ));
+  }
+
+  Widget _showTipoPerfil() {
+    if ( _formMode == FormMode.SIGNUP ) {
+      return new Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          new Text(
+            'Quiero: ',
+            style: new TextStyle(fontSize: 16.0),
+          ),
+          new Radio(
+            value: 1, // Perfil: Contratista
+            groupValue: _radioValue,
+            onChanged: _handleRadioValueChange,
+          ),
+          new Text(
+            'Contratar',
+            style: ( _radioValue == 1 ) ? TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold ) : new TextStyle(fontSize: 16.0),
+          ),
+          new Radio(
+            value: 2, // Perfil: Trabajador
+            groupValue: _radioValue,
+            onChanged: _handleRadioValueChange,
+          ),
+          new Text(
+            'Trabajar',
+            style: ( _radioValue == 2 ) ? TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold ) : new TextStyle(fontSize: 16.0),
+          ),
+        ],
+      );
+    } else {
+      return new Container(
+        height: 0.0,
+      );
+    }
   }
 }
