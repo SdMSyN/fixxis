@@ -14,3 +14,6 @@ Para mi proyecto me ha ayudado:
 - [El tutorial del login y crud en Medium](https://medium.com/flutterpub/flutter-how-to-do-user-login-with-firebase-a6af760b14d5)
 
 # fixxis
+
+Hubo incompatibilidad entre versiones de las dependencias, para validar las dependencias a utilizar visitar:
+[Paquetes y su compatibilidad de Flutter](https://flutter-es.io/docs/development/packages-and-plugins/androidx-compatibility)
