@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 import '../pages/login_signup_page.dart';
 import '../services/authentication.dart';
 import '../pages/home_page.dart';
@@ -21,6 +22,10 @@ enum AuthStatus {
 class _RootPageState extends State<RootPage> {
   AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
   String _userId = "";
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
+  final DBRef = FirebaseDatabase.instance.reference();
+  Query _todoQuery;
+  int _perfil;
 
   @override
   void initState() {
@@ -55,6 +60,15 @@ class _RootPageState extends State<RootPage> {
     });
   }
 
+  void _getPerfil(String userId ){
+    DBRef.child('user').orderByChild("id").equalTo(userId).once().then((DataSnapshot dataSnapShot){
+      Map<dynamic, dynamic> values = dataSnapShot.value;
+      values.forEach((key, values){
+        _perfil = values["perfil"];
+      });
+    });
+  }
+
   Widget _buildWaitingScreen() {
     return Scaffold(
       body: Container(
@@ -83,11 +97,22 @@ class _RootPageState extends State<RootPage> {
         break;
       case AuthStatus.LOGGED_IN:
         if (_userId.length > 0 && _userId != null) {
-          return new HomePage(
-            userId: _userId,
-            auth: widget.auth,
-            onSignedOut: _onSignedOut,
-          );
+          _getPerfil( _userId );
+          print("PERFIL:");
+          print(_perfil);
+          if( _perfil == 0 ){
+            return new HomePage(
+              userId: _userId,
+              auth: widget.auth,
+              onSignedOut: _onSignedOut,
+            );
+          }else{
+            return new HomePage(
+              userId: _userId,
+              auth: widget.auth,
+              onSignedOut: _onSignedOut,
+            );
+          }
         } else return _buildWaitingScreen();
         break;
       default:

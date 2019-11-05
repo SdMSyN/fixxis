@@ -57,6 +57,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
           widget.auth.sendEmailVerification();
           _showVerifyEmailSentDialog();
           _database.reference().child("user").push().set({
+            "id"      : userId,
             "correo"  : _email,
             "perfil"  : _radioValue
           });

@@ -3,6 +3,7 @@ import '../services/authentication.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../models/todo.dart';
 import 'dart:async';
+import 'create_trabajo.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.auth, this.userId, this.onSignedOut})
@@ -18,6 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Todo> _todoList;
+  String _idUser;
 
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -44,6 +46,7 @@ class _HomePageState extends State<HomePage> {
         .equalTo(widget.userId); 
     _onTodoAddedSubscription = _todoQuery.onChildAdded.listen(_onEntryAdded);
     _onTodoChangedSubscription = _todoQuery.onChildChanged.listen(_onEntryChanged);
+    _idUser = widget.userId;
   }
 
   void _checkEmailVerification() async {
@@ -256,7 +259,12 @@ class _HomePageState extends State<HomePage> {
         body: _showTodoList(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            _showDialog(context);
+            //_showDialog(context);
+            print('ID Usuario: $_idUser');
+            Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (context) => CreateTrabajo( userId: _idUser ) ),
+            );
           },
           tooltip: 'Increment',
           child: Icon(Icons.add),
