@@ -9,8 +9,9 @@ class NewOferta{
   String descripcion;
   String idUser;
   String key;
+  String urlImg;
 
-  NewOferta(this.titulo, this.tipoTrabajo, this.pptoIni, this.pptoFin, this.material, this.descripcion, this.idUser);
+  NewOferta(this.titulo, this.tipoTrabajo, this.pptoIni, this.pptoFin, this.material, this.descripcion, this.idUser, this.urlImg);
 
   // NewOferta.map(dynamic obj){
   //   this.titulo       = obj['titulo'];
@@ -29,7 +30,8 @@ class NewOferta{
     pptoFin     = snapshot.value['pptoFin'],
     material    = snapshot.value['material'],
     descripcion = snapshot.value['descripcion'],
-    idUser      = snapshot.value['userId'];
+    idUser      = snapshot.value['userId'],
+    urlImg      = snapshot.value['urlImg'];
 
     toJson() {
       return {
@@ -40,6 +42,7 @@ class NewOferta{
         "pptoFin"     : pptoFin,
         "material"    : material,
         "descripcion" : descripcion,
+        "urlImg"      : urlImg,
       };
     }
   }

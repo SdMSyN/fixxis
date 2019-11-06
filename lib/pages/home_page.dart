@@ -23,6 +23,7 @@ class _HomePageState extends State<HomePage> {
 
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final _textEditingController = TextEditingController();
   StreamSubscription<Event> _onTodoAddedSubscription;
@@ -247,6 +248,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+        key: _scaffoldKey,
         appBar: new AppBar(
           title: new Text('FIXXIS'),
           actions: <Widget>[
@@ -261,14 +263,26 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             //_showDialog(context);
             print('ID Usuario: $_idUser');
-            Navigator.push(
-              context, 
-              MaterialPageRoute(builder: (context) => CreateTrabajo( userId: _idUser ) ),
-            );
+            // Navigator.push(
+            //   context, 
+            //   MaterialPageRoute(builder: (context) => CreateTrabajo( userId: _idUser ) ),
+            // );
+            _navigatedAndDisplay(context);
           },
           tooltip: 'Increment',
           child: Icon(Icons.add),
         )
     );
+  }
+
+  _navigatedAndDisplay(BuildContext context) async{
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateTrabajo( userId: _idUser ) ),
+    );
+
+    _scaffoldKey.currentState.removeCurrentSnackBar();
+    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")));
+
   }
 }

@@ -38,11 +38,11 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
   StreamSubscription<Event> _onOfertaAddedSubscription;
   Query _ofertaQuery;
 
-  @override
-  void dispose() {
-    _onOfertaAddedSubscription.cancel();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _onOfertaAddedSubscription.cancel();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context){
@@ -58,7 +58,7 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
             new FlatButton(
                 child: new Text('Atrás',
                     style: new TextStyle(fontSize: 17.0, color: Colors.white)),
-                onPressed: () { Navigator.pop(context); },
+                onPressed: () { Navigator.pop(context, 'Atras'); },
             ),
           ],
         ),
@@ -187,6 +187,8 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
           onChanged: (value){
             setState((){
               _isSwitched = value;
+              print(_image);
+              print(_uploadedFileURL);
             });
           },
           activeTrackColor: Colors.orangeAccent,
@@ -216,7 +218,8 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
     return Column(
       children: <Widget>[
         Text('Selecciona una imagen'),
-        _image != null ? Image.asset(_image.path, height: 150,) : Container(height: 150),
+        // _image != null ? Image.asset(_image.path, height: 150,) : Container(height: 150),
+        _image != null ? Image.file(_image, height: 150,) : Container(height: 150),
         _image == null ? 
           RaisedButton( 
               child: Text('Escoger una imagen'), 
@@ -255,7 +258,7 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
   Future uploadFile() async{
     StorageReference storageReference = FirebaseStorage.instance
       .ref()
-      .child('ofertas/${Path.basename(_image.path)}}');
+      .child('ofertas/${Path.basename(_image.path)}');
     StorageUploadTask uploadTask = storageReference.putFile(_image);
     await uploadTask.onComplete;
     print('Imagen subida');
@@ -283,7 +286,7 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
       print('Descripción: $_descripcion');
       _addNewOferta();
       showMessage('¡Nueva oferta creada!', Colors.blue);
-      //Navigator.pop(context);
+      Navigator.pop(context, '¡Nueva oferta creada!');
     }
   }
 
@@ -299,7 +302,8 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
       _valFin, 
       _isSwitched, 
       _descripcion,
-      widget.userId
+      widget.userId,
+      _uploadedFileURL
     );
     _database.reference().child("ofertas").push().set(newOferta.toJson());
   }
