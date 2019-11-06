@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../services/authentication.dart';
 import 'package:firebase_database/firebase_database.dart';
-import '../models/todo.dart';
 import 'dart:async';
+import '../services/authentication.dart';
+import '../models/newOferta.dart';
 import 'create_trabajo.dart';
+import 'view_oferta.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.auth, this.userId, this.onSignedOut})
@@ -18,14 +19,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Todo> _todoList;
+  List<NewOferta> _todoList;
   String _idUser;
 
-  final FirebaseDatabase _database = FirebaseDatabase.instance;
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final FirebaseDatabase _database    = FirebaseDatabase.instance;
+  final GlobalKey<FormState> formKey  = GlobalKey<FormState>();
+  final _scaffoldKey                  = GlobalKey<ScaffoldState>();
 
-  final _textEditingController = TextEditingController();
   StreamSubscription<Event> _onTodoAddedSubscription;
   StreamSubscription<Event> _onTodoChangedSubscription;
 
@@ -42,12 +42,12 @@ class _HomePageState extends State<HomePage> {
     _todoList = new List();
     _todoQuery = _database
         .reference()
-        .child("todo") // this is the collection in firebase
+        .child("ofertas") // this is the collection in firebase
         .orderByChild("userId")
         .equalTo(widget.userId); 
-    _onTodoAddedSubscription = _todoQuery.onChildAdded.listen(_onEntryAdded);
-    _onTodoChangedSubscription = _todoQuery.onChildChanged.listen(_onEntryChanged);
-    _idUser = widget.userId;
+    _onTodoAddedSubscription    = _todoQuery.onChildAdded.listen(_onEntryAdded);
+    _onTodoChangedSubscription  = _todoQuery.onChildChanged.listen(_onEntryChanged);
+    _idUser                     = widget.userId;
   }
 
   void _checkEmailVerification() async {
@@ -122,15 +122,14 @@ class _HomePageState extends State<HomePage> {
     var oldEntry = _todoList.singleWhere((entry) {
       return entry.key == event.snapshot.key;
     });
-
     setState(() {
-      _todoList[_todoList.indexOf(oldEntry)] = Todo.fromSnapshot(event.snapshot);
+      _todoList[_todoList.indexOf(oldEntry)] = NewOferta.fromSnapshot(event.snapshot);
     });
   }
 
   _onEntryAdded(Event event) {
     setState(() {
-      _todoList.add(Todo.fromSnapshot(event.snapshot));
+      _todoList.add(NewOferta.fromSnapshot(event.snapshot));
     });
   }
 
@@ -143,76 +142,26 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  _addNewTodo(String todoItem) {
-    if (todoItem.length > 0) {
- 
-      Todo todo = new Todo(todoItem.toString(), widget.userId, false);
-      _database.reference().child("todo").push().set(todo.toJson());
-    }
-  }
-
-  _updateTodo(Todo todo){
-    //Toggle completed
-    todo.completed = !todo.completed;
-    if (todo != null) {
-      _database.reference().child("todo").child(todo.key).set(todo.toJson());
-    }
-  }
-
   _deleteTodo(String todoId, int index) {
-    _database.reference().child("todo").child(todoId).remove().then((_) {
-      print("Delete $todoId successful");
+    _database.reference().child("ofertas").child(todoId).remove().then((_) {
+      print("Se eliminó $todoId exitosamente");
       setState(() {
         _todoList.removeAt(index);
       });
     });
   }
 
-  _showDialog(BuildContext context) async {
-    _textEditingController.clear();
-    await showDialog<String>(
-        context: context,
-      builder: (BuildContext context) {
-          return AlertDialog(
-            content: new Row(
-              children: <Widget>[
-                new Expanded(child: new TextField(
-                  controller: _textEditingController,
-                  autofocus: true,
-                  decoration: new InputDecoration(
-                    labelText: 'Add new todo',
-                  ),
-                ))
-              ],
-            ),
-            actions: <Widget>[
-              new FlatButton(
-                  child: const Text('Cancel'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-              new FlatButton(
-                  child: const Text('Save'),
-                  onPressed: () {
-                    _addNewTodo(_textEditingController.text.toString());
-                    Navigator.pop(context);
-                  })
-            ],
-          );
-      }
-    );
-  }
-
-  Widget _showTodoList() {
+  Widget _showTodoList(){
     if (_todoList.length > 0) {
       return ListView.builder(
           shrinkWrap: true,
           itemCount: _todoList.length,
           itemBuilder: (BuildContext context, int index) {
-            String todoId = _todoList[index].key;
-            String subject = _todoList[index].subject;
-            bool completed = _todoList[index].completed;
-            String userId = _todoList[index].userId;
+            String todoId   = _todoList[index].key;
+            String subject  = _todoList[index].titulo;
+            bool completed  = _todoList[index].material;
+            String userId   = _todoList[index].idUser;
+            String urlImg   = _todoList[index].urlImg;
             return Dismissible(
               key: Key(todoId),
               background: Container(color: Colors.red),
@@ -220,28 +169,24 @@ class _HomePageState extends State<HomePage> {
                 _deleteTodo(todoId, index);
               },
               child: ListTile(
-                title: Text(
-                  subject,
-                  style: TextStyle(fontSize: 20.0),
-                ),
-                trailing: IconButton(
-                    icon: (completed)
-                        ? Icon(
-                      Icons.done_outline,
-                      color: Colors.green,
-                      size: 20.0,
-                    )
-                        : Icon(Icons.done, color: Colors.grey, size: 20.0),
-                    onPressed: () {
-                      _updateTodo(_todoList[index]);
-                    }),
-              ),
+                leading   : ( urlImg != null ) ? Image.network(urlImg) : Image.asset('assets/icono_1.png'),
+                title     : Text(subject),
+                subtitle  : Text(todoId),
+                trailing  : Icon(Icons.keyboard_arrow_right),
+                onTap: () {
+                  Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => ViewOferta(ofertaId: todoId) )
+                  );
+                },
+              )
             );
           });
     } else {
-      return Center(child: Text("Welcome to the Mictlán.",
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 30.0),));
+      return Center(
+        child     : Text("Welcome to the Mictlán.",
+        textAlign : TextAlign.center,
+        style     : TextStyle(fontSize: 30.0),)
+      );
     }
   }
 
@@ -261,12 +206,7 @@ class _HomePageState extends State<HomePage> {
         body: _showTodoList(),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            //_showDialog(context);
             print('ID Usuario: $_idUser');
-            // Navigator.push(
-            //   context, 
-            //   MaterialPageRoute(builder: (context) => CreateTrabajo( userId: _idUser ) ),
-            // );
             _navigatedAndDisplay(context);
           },
           tooltip: 'Increment',
@@ -280,9 +220,8 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(builder: (context) => CreateTrabajo( userId: _idUser ) ),
     );
-
     _scaffoldKey.currentState.removeCurrentSnackBar();
     _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")));
-
   }
+
 }

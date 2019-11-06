@@ -1,14 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
-// Imports for upload image
-import 'dart:io';
-// import 'package:firebase_storage/firebase_storage.dart'; // For file to firebase
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart'; // For image picker
 import 'package:path/path.dart' as Path;
+
 import '../models/newOferta.dart';
 
 class CreateTrabajo extends StatefulWidget {
@@ -20,21 +19,28 @@ class CreateTrabajo extends StatefulWidget {
 }
 
 class _CreateTrabajoState extends State<CreateTrabajo>{
-  final _formKey2 = GlobalKey<FormState>();
+
+  final _formKey2                             = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final FirebaseDatabase _database            = FirebaseDatabase.instance;
+
+  List<String> _tiposTrabajo                  = <String>['','Plomeria','Carpinteria','Aluminio','Albañileria'];
+
   String _idUser;
-  List<String> _tiposTrabajo = <String>['','Plomeria','Carpinteria','Aluminio','Albañileria'];
-  String _tipoTrabajo = '';
-  RangeValues _values = RangeValues(1, 1000);
-  RangeLabels _labels = RangeLabels('1', '5000');
-  int _valIni = 0, _valFin = 0;
-  bool _isSwitched = true;
+  String _tipoTrabajo                         = '';
   String _titulo;
   String _descripcion;
-  File _image;
   String _uploadedFileURL;
 
-  final FirebaseDatabase _database = FirebaseDatabase.instance;
+  RangeValues _values                         = RangeValues(1, 1000);
+  RangeLabels _labels                         = RangeLabels('1', '5000');
+
+  int _valIni                                 = 0;
+  int _valFin                                 = 0;
+
+  bool _isSwitched                            = true;
+
+  File _image;
   StreamSubscription<Event> _onOfertaAddedSubscription;
   Query _ofertaQuery;
 
@@ -98,13 +104,13 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
   Widget _showInputTitulo(){
     return new TextFormField(
       decoration: const InputDecoration(
-        icon: const Icon(Icons.person),
-        hintText: 'Título del proyecto',
-        labelText: 'Título del proyecto',
+        icon      : const Icon(Icons.person),
+        hintText  : 'Título del proyecto',
+        labelText : 'Título del proyecto',
       ),
       inputFormatters: [new LengthLimitingTextInputFormatter(10)],
-      validator: (value) => value.isEmpty ? 'Favor de colocar un título' : null,
-      onSaved: (value) => _titulo = value,
+      validator: (value)  => value.isEmpty ? 'Favor de colocar un título' : null,
+      onSaved: (value)    => _titulo = value,
     );
   }
 
@@ -113,16 +119,16 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
       builder: (FormFieldState<String> state){
         return InputDecorator(
           decoration: InputDecoration(
-            icon: const Icon(Icons.format_paint),
-            labelText: 'Tipo de trabajo',
-            errorText: state.hasError ? state.errorText : null,
+            icon      : const Icon(Icons.format_paint),
+            labelText : 'Tipo de trabajo',
+            errorText : state.hasError ? state.errorText : null,
           ),
           isEmpty: _tipoTrabajo == '',
           child: new DropdownButtonHideUnderline(
             child: new DropdownButton<String>(
-              value: _tipoTrabajo,
-              isDense: true,
-              onChanged: (String newValue){
+              value     : _tipoTrabajo,
+              isDense   : true,
+              onChanged : (String newValue){
                 setState(() {
                   _tipoTrabajo = newValue;
                   print(_tipoTrabajo);
@@ -157,12 +163,12 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
         ),
         Container(
           child: RangeSlider(
-            min: 1,
-            max: 5000,
-            values: _values,
-            labels: _labels,
-            divisions: 100,
-            onChanged: (value){
+            min       : 1,
+            max       : 5000,
+            values    : _values,
+            labels    : _labels,
+            divisions : 100,
+            onChanged : (value){
               print('START: ${value.start}, END: ${value.end}');
               setState((){
                 _values = value;
@@ -192,7 +198,7 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
             });
           },
           activeTrackColor: Colors.orangeAccent,
-          activeColor: Colors.deepOrangeAccent,
+          activeColor     : Colors.deepOrangeAccent,
         ),
       ],
     );
@@ -204,13 +210,13 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
   
   Widget _showInputDescripcion(){
     return TextFormField(
-        maxLines: 8,
-        decoration: InputDecoration(hintText: "Describe tu problema lo más detallado posible.", border: OutlineInputBorder(),
-        labelText: 'Detalle de la oferta'
+        maxLines    : 8,
+        decoration  : InputDecoration(hintText: "Describe tu problema lo más detallado posible.", border: OutlineInputBorder(),
+        labelText   : 'Detalle de la oferta'
       ),
       inputFormatters: [new LengthLimitingTextInputFormatter(1000)],
-      validator: (value) => value.isEmpty ? 'Favor de describir el tipo de trabajo a realizar.' : null,
-      onSaved: (value) => _descripcion = value,
+      validator : (value) => value.isEmpty ? 'Favor de describir el tipo de trabajo a realizar.' : null,
+      onSaved   : (value) => _descripcion = value,
     );
   }
 
@@ -222,15 +228,15 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
         _image != null ? Image.file(_image, height: 150,) : Container(height: 150),
         _image == null ? 
           RaisedButton( 
-              child: Text('Escoger una imagen'), 
-              onPressed: chooseFile, 
-              color: Colors.cyan
+              child     : Text('Escoger una imagen'), 
+              onPressed : chooseFile, 
+              color     : Colors.cyan
           ) : Container(),
         _image != null ? 
           RaisedButton(
-            child: Text('Subir imagen'),
-            onPressed: uploadFile,
-            color: Colors.cyan
+            child     : Text('Subir imagen'),
+            onPressed : uploadFile,
+            color     : Colors.cyan
           ) : Container(),
         // _image != null ?
         //   RaisedButton(
@@ -307,7 +313,5 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
     );
     _database.reference().child("ofertas").push().set(newOferta.toJson());
   }
-
-
 
 }
