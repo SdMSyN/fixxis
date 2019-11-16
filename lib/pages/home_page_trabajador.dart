@@ -4,10 +4,10 @@ import 'dart:async';
 import '../services/authentication.dart';
 import '../models/newOferta.dart';
 import 'create_trabajo.dart';
-import 'view_oferta.dart';
+import 'view_oferta_trabajador.dart';
 
-class HomePage extends StatefulWidget {
-  HomePage({Key key, this.auth, this.userId, this.onSignedOut})
+class HomePageTrabajador extends StatefulWidget {
+  HomePageTrabajador({Key key, this.auth, this.userId, this.onSignedOut})
       : super(key: key);
 
   final BaseAuth auth;
@@ -15,10 +15,10 @@ class HomePage extends StatefulWidget {
   final String userId;
 
   @override
-  State<StatefulWidget> createState() => new _HomePageState();
+  State<StatefulWidget> createState() => new _HomePageTrabajadorState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageTrabajadorState extends State<HomePageTrabajador> {
   List<NewOferta> _todoList;
   String _idUser;
 
@@ -42,9 +42,9 @@ class _HomePageState extends State<HomePage> {
     _todoList = new List();
     _todoQuery = _database
         .reference()
-        .child("ofertas") // this is the collection in firebase
-        .orderByChild("userId")
-        .equalTo(widget.userId); 
+        .child("ofertas"); // this is the collection in firebase
+        // .orderByChild("userId")
+        // .equalTo(widget.userId); 
     _onTodoAddedSubscription    = _todoQuery.onChildAdded.listen(_onEntryAdded);
     _onTodoChangedSubscription  = _todoQuery.onChildChanged.listen(_onEntryChanged);
     _idUser                     = widget.userId;
@@ -142,15 +142,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  _deleteTodo(String todoId, int index) {
-    _database.reference().child("ofertas").child(todoId).remove().then((_) {
-      print("Se eliminó $todoId exitosamente");
-      setState(() {
-        _todoList.removeAt(index);
-      });
-    });
-  }
-
   Widget _showTodoList(){
     if (_todoList.length > 0) {
       return ListView.builder(
@@ -162,29 +153,16 @@ class _HomePageState extends State<HomePage> {
             bool completed  = _todoList[index].material;
             String userId   = _todoList[index].idUser;
             String urlImg   = _todoList[index].urlImg;
-            return Dismissible(
-              key: Key(todoId),
-              background: Container(
-                color: Colors.red,
-                child : Padding(
-                  padding: EdgeInsets.fromLTRB(10.0, 0.0, 1.0, 0.0),
-                  child: Icon(Icons.delete, color: Colors.white, )
-                ),
-              ),
-              onDismissed: (direction) async {
-                _deleteTodo(todoId, index);
+            return ListTile(
+              leading   : ( urlImg != null ) ? Image.network(urlImg) : Image.asset('assets/icono_1.png'),
+              title     : Text(subject),
+              subtitle  : Text(todoId),
+              trailing  : Icon(Icons.keyboard_arrow_right),
+              onTap: () {
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => ViewOfertaTrabajador(ofertaId: todoId, userId: _idUser) )
+                );
               },
-              child: ListTile(
-                leading   : ( urlImg != null ) ? Image.network(urlImg) : Image.asset('assets/icono_1.png'),
-                title     : Text(subject),
-                subtitle  : Text(todoId),
-                trailing  : Icon(Icons.keyboard_arrow_right),
-                onTap: () {
-                  Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => ViewOferta(ofertaId: todoId) )
-                  );
-                },
-              )
             );
           });
     } else {
@@ -210,14 +188,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         body: _showTodoList(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            print('ID Usuario: $_idUser');
-            _navigatedAndDisplay(context);
-          },
-          tooltip: 'Increment',
-          child: Icon(Icons.add),
-        )
     );
   }
 

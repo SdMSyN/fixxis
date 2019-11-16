@@ -108,7 +108,7 @@ class _CreateTrabajoState extends State<CreateTrabajo>{
         hintText  : 'Título del proyecto',
         labelText : 'Título del proyecto',
       ),
-      inputFormatters: [new LengthLimitingTextInputFormatter(10)],
+      inputFormatters: [new LengthLimitingTextInputFormatter(50)],
       validator: (value)  => value.isEmpty ? 'Favor de colocar un título' : null,
       onSaved: (value)    => _titulo = value,
     );

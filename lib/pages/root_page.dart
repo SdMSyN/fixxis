@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import '../pages/login_signup_page.dart';
 import '../services/authentication.dart';
 import '../pages/home_page.dart';
+import '../pages/home_page_trabajador.dart';
 
 class RootPage extends StatefulWidget {
   RootPage({this.auth});
@@ -23,7 +24,7 @@ class _RootPageState extends State<RootPage> {
   AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
   String _userId = "";
   final FirebaseDatabase _database = FirebaseDatabase.instance;
-  final DBRef = FirebaseDatabase.instance.reference();
+  final dBRef = FirebaseDatabase.instance.reference();
   Query _todoQuery;
   int _perfil;
 
@@ -31,9 +32,20 @@ class _RootPageState extends State<RootPage> {
   void initState() {
     super.initState();
     widget.auth.getCurrentUser().then((user) {
+      dBRef.child('user').orderByChild("id").equalTo(user?.uid).once().then((DataSnapshot dataSnapShot){
+        setState(() {
+          Map<dynamic, dynamic> values = dataSnapShot.value;
+          values.forEach((key, values){
+              _perfil = values["perfil"];
+          });
+        });
+      });
+
+    
       setState(() {
         if (user != null) {
           _userId = user?.uid;
+          print("Usuario: $_userId");
         }
         authStatus =
             user?.uid == null ? AuthStatus.NOT_LOGGED_IN : AuthStatus.LOGGED_IN;
@@ -60,11 +72,13 @@ class _RootPageState extends State<RootPage> {
     });
   }
 
-  void _getPerfil(String userId ){
-    DBRef.child('user').orderByChild("id").equalTo(userId).once().then((DataSnapshot dataSnapShot){
-      Map<dynamic, dynamic> values = dataSnapShot.value;
-      values.forEach((key, values){
-        _perfil = values["perfil"];
+  void _getPerfil(String userId ) {
+    dBRef.child('user').orderByChild("id").equalTo(userId).once().then((DataSnapshot dataSnapShot){
+      setState(() {
+        Map<dynamic, dynamic> values = dataSnapShot.value;
+        values.forEach((key, values){
+            _perfil = values["perfil"];
+        });
       });
     });
   }
@@ -97,22 +111,24 @@ class _RootPageState extends State<RootPage> {
         break;
       case AuthStatus.LOGGED_IN:
         if (_userId.length > 0 && _userId != null) {
-          _getPerfil( _userId );
+          // _getPerfil( _userId );
           print("PERFIL:");
           print(_perfil);
-          if( _perfil == 0 ){
-            return new HomePage(
-              userId: _userId,
-              auth: widget.auth,
-              onSignedOut: _onSignedOut,
-            );
-          }else{
+          if( _perfil == 1 ){
             return new HomePage(
               userId: _userId,
               auth: widget.auth,
               onSignedOut: _onSignedOut,
             );
           }
+          else if( _perfil == 2 ){
+            return new HomePageTrabajador(
+              userId: _userId,
+              auth: widget.auth,
+              onSignedOut: _onSignedOut,
+            );
+          }
+          else return Container();
         } else return _buildWaitingScreen();
         break;
       default:
