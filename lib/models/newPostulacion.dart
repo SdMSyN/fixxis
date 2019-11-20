@@ -4,7 +4,8 @@ class NewPostulacion{
   String  descripcion,
           idOferta,
           idUser,
-          key;
+          key,
+          keyPrimary;
   int     days,
           hours,
           cotizacion;
@@ -12,7 +13,7 @@ class NewPostulacion{
           ganancia;
   bool    estatus;
 
-  NewPostulacion( this.idOferta, this.idUser, this.estatus, this.descripcion, this.days, this.hours, this.cotizacion, this.comision, this.ganancia );
+  NewPostulacion( this.idOferta, this.idUser, this.estatus, this.descripcion, this.days, this.hours, this.cotizacion, this.comision, this.ganancia, this.keyPrimary );
 
   NewPostulacion.fromSnapshot(DataSnapshot snapshot) :
     key         = snapshot.key,
@@ -24,7 +25,8 @@ class NewPostulacion{
     cotizacion  = snapshot.value['cotizacion'],
     comision    = snapshot.value['comision'],
     ganancia    = snapshot.value['ganancia'],
-    estatus     = snapshot.value['estatus'];
+    estatus     = snapshot.value['estatus'],
+    keyPrimary  = snapshot.value['keyPrimary'];
 
     toJson(){
       return {
@@ -37,6 +39,7 @@ class NewPostulacion{
         "comision"    : comision,
         "ganancia"    : ganancia,
         "estatus"     : estatus,
+        "keyPrimary"  : keyPrimary,
       };
     }
 

@@ -22,6 +22,7 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
   String  _tipoTrabajo;
   String  _idOferta;
   String  _idUser;
+  String  _keyPrimary;
   int     _pptoIni;
   int     _pptoFin;
   bool    _material;
@@ -31,8 +32,9 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
     super.initState();
     print("----- initState:");
     print(widget.ofertaId);
-    _idOferta = widget.ofertaId;
-    _idUser   = widget.userId;
+    _idOferta   = widget.ofertaId;
+    _idUser     = widget.userId;
+    _keyPrimary = _idOferta+"/"+_idUser;
     dBRef.child('ofertas/$_idOferta').once().then((DataSnapshot dataSnapShot){
       setState(() {
         Map<dynamic, dynamic> values = dataSnapShot.value;
@@ -44,6 +46,19 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
         _pptoIni      = values["pptoIni"];
         _pptoFin      = values["pptoFin"];
         _material     = values["material"];
+      });
+    });
+    // Validamos que la oferta no haya sido aún postulada
+    dBRef.child("postulaciones").orderByChild("keyPrimary").equalTo(_keyPrimary).once().then((DataSnapshot dataSnapShot){
+      setState(() {
+        Map<dynamic, dynamic> values = dataSnapShot.value;
+        print("Validación postulación");
+        if( values == null ){
+          print("NO postulado");
+        }else{
+          print("YA...");
+          print(values);
+        }
       });
     });
   }

@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
@@ -22,12 +19,11 @@ class _CreatePostulacionState extends State<CreatePostulacion>{
   final FirebaseDatabase _database            = FirebaseDatabase.instance;
   final dbRef                                 = FirebaseDatabase.instance.reference();
   static final TextEditingController _textController = TextEditingController();
-  TextEditingController _textDias  = TextEditingController( text: '0' );
-  TextEditingController _textHoras = TextEditingController( text: '1' );
 
   String _idOferta,
          _idUser,
-         _descripcion;
+         _descripcion,
+         _keyPrimary;
   int    _pptoIni, 
          _pptoFin,
          _valFin   = 0,
@@ -51,6 +47,7 @@ class _CreatePostulacionState extends State<CreatePostulacion>{
     print("----------------- InitState");
     _idOferta = widget.ofertaId;
     _idUser = widget.userId;
+    _keyPrimary = _idOferta+"/"+_idUser;
     print('Oferta = $_idOferta - Usuario = $_idUser ');
     dbRef.child('ofertas/$_idOferta').once().then((DataSnapshot dataSnapShot){
       setState((){
@@ -163,21 +160,23 @@ class _CreatePostulacionState extends State<CreatePostulacion>{
 
   Widget _showInputDias(){
     return new TextFormField(
-      controller: _textDias,
+      // controller: _textDias,
       keyboardType: TextInputType.phone,
       inputFormatters: <TextInputFormatter>[
           WhitelistingTextInputFormatter.digitsOnly
       ],
       decoration: InputDecoration(
           labelText:"¿Cuántos días tardarás?", 
-          hintText: "Número de días",
+          hintText: "0",
           icon: Icon(Icons.wb_sunny)
       ),
       validator: (value) {
         var cadErr = '';
         cadErr = ( value.isEmpty ) ? 'Favor de colocar el número de días' :  '';
-        cadErr = ( int.parse(value) < 0 ) ? 'Los días no pueden ser negativos' : '';
-        cadErr = ( int.parse(value) > 10 ) ? 'Los días no pueden ser más de 10' : '';
+        if( value.isNotEmpty ){
+          cadErr = ( int.parse(value) < 0 ) ? 'Los días no pueden ser negativos' : '';
+          cadErr = ( int.parse(value) > 10 ) ? 'Los días no pueden ser más de 10' : '';
+        }
         if( cadErr == '' ) cadErr = null;
         return cadErr;
       },
@@ -187,21 +186,23 @@ class _CreatePostulacionState extends State<CreatePostulacion>{
 
   Widget _showInputHoras(){
     return new TextFormField(
-      controller: _textHoras,
+      // controller: _textHoras,
       keyboardType: TextInputType.phone,
       inputFormatters: <TextInputFormatter>[
           WhitelistingTextInputFormatter.digitsOnly
       ],
       decoration: InputDecoration(
           labelText:"¿Cuántas horas tardarás?", 
-          hintText: "Número de horas",
+          hintText: "0",
           icon: Icon(Icons.access_time)
       ),
       validator: (value) {
         var cadErr = '';
         cadErr = ( value.isEmpty ) ? 'Favor de colocar el número de horas' :  '';
-        cadErr = ( int.parse(value) < 0 ) ? 'Las horas no pueden ser negativas' : '';
-        cadErr = ( int.parse(value) > 24 ) ? 'No pueden ser más de 24 horas' : '';
+        if( value.isNotEmpty ){
+          cadErr = ( int.parse(value) < 0 ) ? 'Las horas no pueden ser negativas' : '';
+          cadErr = ( int.parse(value) > 24 ) ? 'No pueden ser más de 24 horas' : '';
+        }
         if( cadErr == '' ) cadErr = null;
         return cadErr;
       },
@@ -225,7 +226,16 @@ class _CreatePostulacionState extends State<CreatePostulacion>{
       print('Formulario incorrecto');
       showMessage('Formulario incorrecto, valida tu información.');
     }else{
+      formAddNew.save();
       print('Éxito*********');
+      print("$_idOferta");
+      print("$_idUser");
+      print("$_descripcion");
+      print("$_numDays");
+      print("$_numHours");
+      print("$_valFin");
+      print("$_comision");
+      print("$_ganancia");
       _addNewPostulacion();
       showMessage( '¡Te haz postulado con éxito!', Colors.blue );
       Navigator.pop(context, '¡Te haz postulado con éxito!');
@@ -243,10 +253,11 @@ class _CreatePostulacionState extends State<CreatePostulacion>{
       false,
       _descripcion,
       _numDays,
-      _numHours, // FIXME: No guarda las horas.
+      _numHours,
       _valFin, // Cotización
       _comision,
-      _ganancia
+      _ganancia,
+      _keyPrimary
     );
     _database.reference().child("postulaciones").push().set(newPostulacion.toJson());
   }
