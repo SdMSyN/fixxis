@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:async';
@@ -32,6 +33,9 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
   Query _todoQuery;
 
   bool _isEmailVerified = false;
+  String _nombre,
+         _urlImgProfile,
+         _mail;
 
   @override
   void initState() {
@@ -48,6 +52,21 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
     _onTodoAddedSubscription    = _todoQuery.onChildAdded.listen(_onEntryAdded);
     _onTodoChangedSubscription  = _todoQuery.onChildChanged.listen(_onEntryChanged);
     _idUser                     = widget.userId;
+
+    // obtenemos la información del usuario
+    _database.reference().child("user").orderByChild("id").equalTo(widget.userId).once().then((DataSnapshot dataSnapShot){
+      setState(() {
+        Map<dynamic, dynamic> values = dataSnapShot.value;
+        print("+++++++ HomePageTrabajador---InitState");
+        print(values);
+        values.forEach((key, values){
+          _mail = values["correo"];
+          _urlImgProfile = ( values["urlImg"] != null ) ? values["urlImg"] : "";
+          _nombre = ( values["nombre"] != null ) ? values["nombre"] : "";
+        });
+      });
+    });
+
   }
 
   void _checkEmailVerification() async {
@@ -153,10 +172,11 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
             bool completed  = _todoList[index].material;
             String userId   = _todoList[index].idUser;
             String urlImg   = _todoList[index].urlImg;
+            String descripcion = _todoList[index].descripcion;
             return ListTile(
               leading   : ( urlImg != null ) ? Image.network(urlImg) : Image.asset('assets/icono_1.png'),
               title     : Text(subject),
-              subtitle  : Text(todoId),
+              subtitle  : Text(descripcion),
               trailing  : Icon(Icons.keyboard_arrow_right),
               onTap: () {
                 Navigator.push(
@@ -178,6 +198,7 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
   Widget build(BuildContext context) {
     return new Scaffold(
         key: _scaffoldKey,
+        drawer: _drawMenu(),
         appBar: new AppBar(
           title: new Text('FIXXIS'),
           actions: <Widget>[
@@ -198,6 +219,40 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
     );
     _scaffoldKey.currentState.removeCurrentSnackBar();
     _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")));
+  }
+
+    Widget _drawMenu(){
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          UserAccountsDrawerHeader(
+            accountName: ( _nombre != null && _nombre != "" ) ? Text( _nombre ) : Text("Trabajador"),
+            accountEmail: ( _mail != null ) ? Text( _mail ) : Text( "mi_correo@fixxis.com" ),
+            currentAccountPicture: new CircleAvatar(
+              backgroundColor: Colors.white,
+              child: 
+                ( _urlImgProfile != null && _urlImgProfile != "" ) 
+                  ? new CachedNetworkImage( imageUrl: _urlImgProfile ) 
+                  : new Image.asset('assets/icono_1.png'),
+            ),
+            decoration: BoxDecoration(
+              color: Colors.orangeAccent 
+            ),
+          ),
+          ListTile(
+            title: Text('Perfil'),
+            leading: Icon(Icons.settings),
+            onTap: (){
+              Navigator.of(context).pop();
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(builder: (context) => CreatePostulacion( userId: _idUser, ofertaId: _idOferta ) ),
+              // );
+            },
+          ),
+        ],
+      ),
+    );
   }
 
 }

@@ -23,9 +23,14 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
   String  _idOferta;
   String  _idUser;
   String  _keyPrimary;
-  int     _pptoIni;
-  int     _pptoFin;
-  bool    _material;
+  String  _descPos;
+  int     _pptoIni,
+          _pptoFin,
+          _hoursPos,
+          _daysPos;
+  int  _cotizacion;
+  bool    _material,
+          _postulado = false;
 
   @override
   void initState() {
@@ -56,8 +61,16 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
         if( values == null ){
           print("NO postulado");
         }else{
-          print("YA...");
-          print(values);
+          values.forEach((key, values){
+            print("YA...");
+            print(values);
+            print(values["descripcion"]);
+            _postulado  = true;
+            _descPos    = values["descripcion"];
+            _daysPos    = values["days"];
+            _hoursPos   = values["hours"];
+            _cotizacion = values["cotizacion"];
+          });
         }
       });
     });
@@ -101,10 +114,14 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
                 // // of the Material and display ink effects above it. Using a
                 // // standard Image will obscure the ink splash.
                 child: Ink.image(
-                  image   : ( _urlImage != null ) ? CachedNetworkImageProvider(_urlImage) : AssetImage('assets/icono_1.png') ,
+                  image   : ( _urlImage != null ) ? 
+                    CachedNetworkImageProvider( _urlImage, ) : 
+                    AssetImage('assets/icono_1.png') ,
+                  // image: CachedNetworkImage(imageUrl: _urlImage,),
                   fit     : BoxFit.cover,
                   child   : Container(),
                 ),
+                // child: ( _urlImage != null ) ? CachedNetworkImage( imageUrl: _urlImage, ) : Image.asset('assets/icono_1.png'),
               ),
               Positioned(
                 bottom  : 16.0,
@@ -129,44 +146,50 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
         // Description and share/explore buttons.
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              // three line description
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  ( _descripcion != null ) ? _descripcion : "",
-                ),
-              ),
-              Row(
-                children: <Widget>[
-                  Text(
-                    ( _tipoTrabajo != null ) ? _tipoTrabajo : "",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+          child: DefaultTextStyle(
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.subhead,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                // three line description
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    ( _descripcion != null ) ? _descripcion : "",
                   ),
-                  ( _material != null && _material ) ? Text(" - Se requiere comprar material") : Text("No se requiere material") ,
-                ],
-              ),
-              Row(
-                children: <Widget>[
-                  Text( ( _pptoIni != null && _pptoFin != null ) ? "Presupuesto: \$$_pptoIni - \$$_pptoFin " : "" ),
-                ],
-              ),
+                ),
+                Row(
+                  children: <Widget>[
+                    Text(
+                      ( _tipoTrabajo != null ) ? _tipoTrabajo : "",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ( _material != null && _material ) ? Text(" - Se requiere comprar material") : Text("No se requiere material") ,
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Text( ( _pptoIni != null && _pptoFin != null ) ? "Presupuesto: \$$_pptoIni - \$$_pptoFin " : "" ),
+                  ],
+                ),
               // Text(destination.location),
-            ],
+              ],
+            ),
           ),
         ),
         // if (destination.type == CardDemoType.standard)
         //   // share, explore buttons
+        ( _postulado == false ) ? 
           ButtonBar(
             alignment: MainAxisAlignment.start,
             children: <Widget>[
               FlatButton(
                 child: Text('Postularse', semanticsLabel: 'Share '),
-                textColor: Colors.orangeAccent,
+                textColor: Colors.white60,
                 color: Colors.deepOrangeAccent,
                 splashColor: Colors.blueAccent,
                 onPressed: () { 
@@ -174,7 +197,9 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
                 },
               ),
             ],
-          ),
+          ) : _showPostulacion(),
+
+
       ],
     );
   }
@@ -186,6 +211,67 @@ class _ViewOfertaTrabajadorState extends State<ViewOfertaTrabajador>{
     );
     _scaffoldKey.currentState.removeCurrentSnackBar();
     _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")));
+  }
+
+  Widget _showPostulacion(){
+    return Container(
+      margin      : EdgeInsets.all(16.0),
+      padding     : EdgeInsets.all(16.0),
+      decoration  : BoxDecoration(
+        color         : Colors.purple[900],
+        border        : Border.all(),
+        borderRadius  : BorderRadius.all(Radius.circular(3.0)),
+      ),
+      child: Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Padding(
+                padding : EdgeInsets.only(right: 8.0),
+                child   : Icon(
+                  Icons.attach_money, 
+                  color: Colors.greenAccent
+                ),
+              ),
+              Text(
+                '$_cotizacion', 
+                style: TextStyle(color: Colors.white)
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              Text(
+                '$_descPos',
+                style: TextStyle(color: Colors.white60),
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              Column(
+                children: [
+                  Icon(Icons.wb_sunny, color: Colors.green),
+                  Text(
+                    '$_daysPos', 
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Icon(Icons.access_time, color: Colors.green),
+                  Text(
+                    '$_hoursPos', 
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      )
+    ); 
   }
 
 }
