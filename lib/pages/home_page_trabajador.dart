@@ -6,6 +6,7 @@ import '../services/authentication.dart';
 import '../models/newOferta.dart';
 import 'create_trabajo.dart';
 import 'view_oferta_trabajador.dart';
+import 'edit_perfil.dart';
 
 class HomePageTrabajador extends StatefulWidget {
   HomePageTrabajador({Key key, this.auth, this.userId, this.onSignedOut})
@@ -222,37 +223,37 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
   }
 
     Widget _drawMenu(){
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          UserAccountsDrawerHeader(
-            accountName: ( _nombre != null && _nombre != "" ) ? Text( _nombre ) : Text("Trabajador"),
-            accountEmail: ( _mail != null ) ? Text( _mail ) : Text( "mi_correo@fixxis.com" ),
-            currentAccountPicture: new CircleAvatar(
-              backgroundColor: Colors.white,
-              child: 
-                ( _urlImgProfile != null && _urlImgProfile != "" ) 
-                  ? new CachedNetworkImage( imageUrl: _urlImgProfile ) 
-                  : new Image.asset('assets/icono_1.png'),
+      return Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            UserAccountsDrawerHeader(
+              accountName: ( _nombre != null && _nombre != "" ) ? Text( _nombre ) : Text("Trabajador"),
+              accountEmail: ( _mail != null ) ? Text( _mail ) : Text( "mi_correo@fixxis.com" ),
+              currentAccountPicture: new CircleAvatar(
+                backgroundColor: Colors.white,
+                child: 
+                  ( _urlImgProfile != null && _urlImgProfile != "" ) 
+                    ? new CachedNetworkImage( imageUrl: _urlImgProfile ) 
+                    : new Image.asset('assets/icono_1.png'),
+              ),
+              decoration: BoxDecoration(
+                color: Colors.orangeAccent 
+              ),
             ),
-            decoration: BoxDecoration(
-              color: Colors.orangeAccent 
+            ListTile(
+              title: Text('Perfil'),
+              leading: Icon(Icons.settings),
+              onTap: (){
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser ) ),
+                );
+              },
             ),
-          ),
-          ListTile(
-            title: Text('Perfil'),
-            leading: Icon(Icons.settings),
-            onTap: (){
-              Navigator.of(context).pop();
-              // Navigator.of(context).push(
-              //   MaterialPageRoute(builder: (context) => CreatePostulacion( userId: _idUser, ofertaId: _idOferta ) ),
-              // );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
+    }
 
 }
