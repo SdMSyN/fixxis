@@ -36,7 +36,8 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
   bool _isEmailVerified = false;
   String _nombre,
          _urlImgProfile,
-         _mail;
+         _mail,
+         _keyUser;
 
   @override
   void initState() {
@@ -60,6 +61,7 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
         Map<dynamic, dynamic> values = dataSnapShot.value;
         print("+++++++ HomePageTrabajador---InitState");
         print(values);
+        _keyUser = values.keys.single.toString();
         values.forEach((key, values){
           _mail = values["correo"];
           _urlImgProfile = ( values["urlImg"] != null ) ? values["urlImg"] : "";
@@ -247,7 +249,7 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
               onTap: (){
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser ) ),
+                  MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser, userKey: _keyUser ) ),
                 );
               },
             ),
