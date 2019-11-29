@@ -13,13 +13,13 @@ class ViewOferta extends StatefulWidget {
 class _ViewOfertaState extends State<ViewOferta>{
 
   final dBRef = FirebaseDatabase.instance.reference();
-  String  _titulo;
-  String  _descripcion;
-  String  _urlImage;
-  String  _tipoTrabajo;
-  String  _idOferta;
-  int     _pptoIni;
-  int     _pptoFin;
+  String  _titulo,
+          _descripcion,
+          _urlImage,
+          _tipoTrabajo,
+          _idOferta;
+  int     _pptoIni,
+          _pptoFin;
   bool    _material;
 
   @override
@@ -76,31 +76,13 @@ class _ViewOfertaState extends State<ViewOferta>{
           child: Stack(
             children: <Widget>[
               Positioned.fill(
-                // // In order to have the ink splash appear above the image, you
-                // // must use Ink.image. This allows the image to be painted as part
-                // // of the Material and display ink effects above it. Using a
-                // // standard Image will obscure the ink splash.
                 child: Ink.image(
-                  image   : ( _urlImage != null ) ? CachedNetworkImageProvider(_urlImage) : AssetImage('assets/icono_1.png') ,
+                  image   : ( _urlImage != null ) 
+                    ? CachedNetworkImageProvider( _urlImage ) 
+                    : AssetImage('assets/icono_1.png') ,
                   fit     : BoxFit.cover,
                   child   : Container(),
                 ),
-                //child: ( _urlImage != null ) ? CachedNetworkImageProvider(_urlImage) : new Image.asset('assets/icono_1.png') , 
-                // child: Ink.image(
-                //   image   : ( _urlImage != null ) ? CachedNetworkImageProvider(_urlImage) : new Image.asset('assets/icono_1.png'),
-                //   fit     : BoxFit.cover,
-                //   child   : Container(),
-                // ),
-                //child: Image(image: ( _urlImage != null ) ? CachedNetworkImageProvider(_urlImage) : new Image.asset('assets/icono_1.png') , ),
-                // child: Image( 
-                //   image: ( _urlImage != null ) ? CachedNetworkImageProvider(_urlImage) :  AssetImage('assets/icono_1.png'), 
-                //   fit: BoxFit.cover,
-                // ),
-                // child: Ink.image(
-                //   image   : new CachedNetworkImage( placeholder: new AssetImage('assets/icono_1.png'), imageUrl: _urlImage, ) ,
-                //   fit     : BoxFit.cover,
-                //   child   : Container(),
-                // ),
               ),
               Positioned(
                 bottom  : 16.0,
@@ -125,56 +107,152 @@ class _ViewOfertaState extends State<ViewOferta>{
         // Description and share/explore buttons.
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              // three line description
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  ( _descripcion != null ) ? _descripcion : "",
-                ),
-              ),
-              Row(
-                children: <Widget>[
-                  Text(
-                    ( _tipoTrabajo != null ) ? _tipoTrabajo : "",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+          child: DefaultTextStyle(
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.subhead,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                // three line description
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    ( _descripcion != null ) ? _descripcion : "",
                   ),
-                  ( _material != null && _material ) ? Text(" - Se requiere comprar material") : Text("No se requiere material") ,
-                ],
-              ),
-              Row(
-                children: <Widget>[
-                  Text( ( _pptoIni != null && _pptoFin != null ) ? "Presupuesto: \$$_pptoIni - \$$_pptoFin " : "" ),
-                ],
-              ),
-              // Text(destination.location),
-            ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Text(
+                      ( _tipoTrabajo != null ) ? _tipoTrabajo : "",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ( _material != null && _material ) ? Text(" - Se requiere comprar material") : Text("No se requiere material") ,
+                  ],
+                ),
+                Row(
+                  children: <Widget>[
+                    Text( ( _pptoIni != null && _pptoFin != null ) ? "Presupuesto: \$$_pptoIni - \$$_pptoFin " : "" ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        // if (destination.type == CardDemoType.standard)
-        //   // share, explore buttons
-        //   ButtonBar(
-        //     alignment: MainAxisAlignment.start,
-        //     children: <Widget>[
-        //       FlatButton(
-        //         child: Text('SHARE', semanticsLabel: 'Share ${destination.title}'),
-        //         textColor: Colors.amber.shade500,
-        //         onPressed: () { print('pressed'); },
-        //       ),
-        //       FlatButton(
-        //         child: Text('EXPLORE', semanticsLabel: 'Explore ${destination.title}'),
-        //         textColor: Colors.amber.shade500,
-        //         onPressed: () { print('pressed'); },
-        //       ),
-        //     ],
-        //   ),
+        // Expanded( child: Divider(color: Colors.red, indent: 5.0,) ),
+        _showPostulaciones(),
       ],
     );
   }
 
+  Widget _showPostulaciones(){
+    return new Container(
+      margin      : EdgeInsets.all(16.0),
+      padding     : EdgeInsets.all(3.0),
+      // decoration  : BoxDecoration(
+      //   color       : Colors.purple[800],
+      //   border      : Border.all(),
+      //   borderRadius: BorderRadius.all( Radius.circular( 3.0 ) ),
+      // ),
+      child: Card(
+        color: Colors.purple[900],
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              width : 130,
+              child: leftColumn,
+            ),
+            rightColumn,
+          ],
+        ), 
+      ),
+    );
+  }
+
+  var stars = Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(Icons.star, color: Colors.green[500]),
+      Icon(Icons.star, color: Colors.green[500]),
+      Icon(Icons.star, color: Colors.green[500]),
+      Icon(Icons.star, color: Colors.black),
+      Icon(Icons.star, color: Colors.black),
+    ],
+  );
+
+  final leftColumn = Container(
+    padding: EdgeInsets.all( 10 ),
+    child: Column(
+      children: <Widget>[
+        CircleAvatar(
+          radius: 32.0,
+          backgroundColor: Colors.red,
+        ),
+        Text(
+          'Nombre Completo',
+          style: TextStyle( color: Colors.white ),
+        ),
+        stars, // FIXME: 
+      ],
+    ),
+  );
+
+  
+
+  final rightColumn = Container(
+    padding: EdgeInsets.fromLTRB( 5, 5, 8, 5 ),
+    child: Column(
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only( right : 8.0 ),
+              child  : Icon(
+                Icons.attach_money,
+                color : Colors.greenAccent
+              ),
+            ),
+            Text( 
+              'Hola', // cotización
+              style : TextStyle( color: Colors.white ),
+            ),
+          ],
+        ),
+        Row(
+          children: <Widget>[
+            Text(
+              'Descripción',
+              style : TextStyle( color : Colors.white60 ),
+            ),
+          ],
+        ),
+        Row(
+          children : <Widget>[
+            Column(
+              children: [
+                Icon(Icons.wb_sunny, color: Colors.green),
+                Text(
+                  'Días', 
+                  style: TextStyle(color: Colors.white54),
+                ),
+              ],
+            ), 
+            Column(
+              children: [
+                Icon(Icons.access_time, color: Colors.green),
+                Text(
+                  'Horas', 
+                  style: TextStyle(color: Colors.white54),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
 
 }

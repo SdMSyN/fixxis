@@ -218,44 +218,47 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
   _navigatedAndDisplay(BuildContext context) async{
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreateTrabajo( userId: _idUser ) ),
+      MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser, userKey: _keyUser ) ),
     );
     _scaffoldKey.currentState.removeCurrentSnackBar();
-    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")));
-  }
+    ( result == "Atrás" ) 
+      ? _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")))
+      : _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.blue, content: Text("$result")));
+  } 
 
-    Widget _drawMenu(){
-      return Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            UserAccountsDrawerHeader(
-              accountName: ( _nombre != null && _nombre != "" ) ? Text( _nombre ) : Text("Trabajador"),
-              accountEmail: ( _mail != null ) ? Text( _mail ) : Text( "mi_correo@fixxis.com" ),
-              currentAccountPicture: new CircleAvatar(
-                backgroundColor: Colors.white,
-                child: 
-                  ( _urlImgProfile != null && _urlImgProfile != "" ) 
-                    ? new CachedNetworkImage( imageUrl: _urlImgProfile ) 
-                    : new Image.asset('assets/icono_1.png'),
-              ),
-              decoration: BoxDecoration(
-                color: Colors.orangeAccent 
-              ),
+  Widget _drawMenu(){
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          UserAccountsDrawerHeader(
+            accountName: ( _nombre != null && _nombre != "" ) ? Text( _nombre ) : Text("Trabajador"),
+            accountEmail: ( _mail != null ) ? Text( _mail ) : Text( "mi_correo@fixxis.com" ),
+            currentAccountPicture: new CircleAvatar(
+              backgroundColor: Colors.white,
+              child: 
+                ( _urlImgProfile != null && _urlImgProfile != "" ) 
+                  ? new CachedNetworkImage( imageUrl: _urlImgProfile ) 
+                  : new Image.asset('assets/icono_1.png'),
             ),
-            ListTile(
-              title: Text('Perfil'),
-              leading: Icon(Icons.settings),
-              onTap: (){
-                Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser, userKey: _keyUser ) ),
-                );
-              },
+            decoration: BoxDecoration(
+              color: Colors.orangeAccent 
             ),
-          ],
-        ),
-      );
-    }
+          ),
+          ListTile(
+            title: Text('Perfil'),
+            leading: Icon(Icons.settings),
+            onTap: (){
+              Navigator.of(context).pop();
+              _navigatedAndDisplay(context);
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser, userKey: _keyUser ) ),
+              // );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
 }
