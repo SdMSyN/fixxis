@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import '../models/viewPostulacion.dart';
 
 class ViewOferta extends StatefulWidget {
   ViewOferta({Key key, this.ofertaId}) : super(key: key);
@@ -21,6 +22,7 @@ class _ViewOfertaState extends State<ViewOferta>{
   int     _pptoIni,
           _pptoFin;
   bool    _material;
+  List<ViewPostulacion> _listPost = new List();
 
   @override
   void initState() {
@@ -30,6 +32,8 @@ class _ViewOfertaState extends State<ViewOferta>{
     _idOferta = widget.ofertaId;
     dBRef.child('ofertas/$_idOferta').once().then((DataSnapshot dataSnapShot){
       setState(() {
+        print(" DATASNAPSHOT::::");
+        print(dataSnapShot.value);
         Map<dynamic, dynamic> values = dataSnapShot.value;
         print(values);
         _titulo       = values["titulo"];
@@ -41,6 +45,43 @@ class _ViewOfertaState extends State<ViewOferta>{
         _material     = values["material"];
       });
     });
+
+    // FIXME: consulta de postulaciones e información de usuarios
+    dBRef.child('postulaciones').orderByChild("idOferta").equalTo(widget.ofertaId).once().then((DataSnapshot dataSnapshot){
+      print("dataSnapshot:::");
+      print(dataSnapshot);
+      Map<dynamic, dynamic> values2 = dataSnapshot.value;
+      print("********* ViewOferta---InitState");
+      print(values2);
+      values2.forEach((key2, values2){
+        String idUser = values2["idUser"];
+        dBRef.child("user").orderByChild("id").equalTo(idUser).once().then((DataSnapshot dataSnapshot3){
+          setState(() {
+            Map<dynamic, dynamic> values3 = dataSnapshot3.value;
+            print("------- ViewOferta---InitState-----USER:");
+            print(values3);
+            values3.forEach((key3, values3){
+              String urlImgTemp = ( values3["urlImg"] == null ) ? "assets/icono_1.png" : values3["urlImg"];
+
+              var snap = {
+                "descripcion" : values2["descripcion"],
+                "idOferta"    : _idOferta,
+                "idUser"      : idUser,
+                "nameUser"    : values3["nombre"],
+                "days"        : values2["days"],
+                "hours"       : values2["hours"],
+                "cotizacion"  : values2["cotizacion"],
+                "urlImgUser"  : urlImgTemp,
+              };
+
+              // _listPost.add(ViewPostulacion.fromSnapshot(newViewPost.toJson()));
+              _listPost.add(ViewPostulacion.fromJson( snap ));
+            });
+          });
+        });
+      });
+    });
+
   }
 
   @override
@@ -142,117 +183,168 @@ class _ViewOfertaState extends State<ViewOferta>{
           ),
         ),
         // Expanded( child: Divider(color: Colors.red, indent: 5.0,) ),
-        _showPostulaciones(),
+        Expanded(
+          // child: Text("Hola"),
+            child: new ListView.builder(
+              itemCount: _listPost.length,
+              itemBuilder: (BuildContext context, int index){
+                // return Card( child: ListTile(title: Text("Luigi")));
+                return _showPostulaciones(  
+                  _listPost[index].urlImgUser, 
+                  _listPost[index].nameUser, 
+                  _listPost[index].cotizacion,
+                  _listPost[index].descripcion,
+                  _listPost[index].days,
+                  _listPost[index].hours,
+                );
+            }),
+        ),
       ],
     );
   }
 
-  Widget _showPostulaciones(){
-    return new Container(
-      margin      : EdgeInsets.all(16.0),
-      padding     : EdgeInsets.all(3.0),
-      // decoration  : BoxDecoration(
-      //   color       : Colors.purple[800],
-      //   border      : Border.all(),
-      //   borderRadius: BorderRadius.all( Radius.circular( 3.0 ) ),
-      // ),
-      child: Card(
-        color: Colors.purple[900],
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              width : 130,
-              child: leftColumn,
-            ),
-            rightColumn,
-          ],
+  Widget _showPostulaciones( urlImgAvatar, nombre, cotizacion, descripcion, dias, horas ){
+    // new ListView.builder(itemBuilder: (BuildContext context, int index){
+      return new Container(
+        margin      : EdgeInsets.all(16.0),
+        padding     : EdgeInsets.all(3.0),
+        child: Card(
+          color: Colors.purple[900],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width : 130,
+                child: leftColumn( urlImgAvatar, nombre ),
+              ),
+              rightColumn( cotizacion, descripcion, dias, horas ),
+            ],
+          ), 
         ), 
+      );
+    // });
+  }
+
+  // final leftColumn = Container(
+  Widget leftColumn( urlImgProfile, nameProfile ) {
+    return new Container(
+      padding: EdgeInsets.all( 10 ),
+      child: Column(
+        children: <Widget>[
+          new CircleAvatar(
+            radius: 32.0,
+            backgroundColor: Colors.red,
+            backgroundImage: ( urlImgProfile == "assets/icono_1.png" ) 
+              ? AssetImage( urlImgProfile )
+              : CachedNetworkImageProvider( urlImgProfile ),
+          ),
+          Text(
+            '$nameProfile',
+            style: TextStyle( 
+              color: Colors.white, 
+              fontSize: 12.0, 
+            ),
+          ), 
+          _showStars(),
+        ],
       ),
     );
   }
 
-  var stars = Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(Icons.star, color: Colors.green[500]),
-      Icon(Icons.star, color: Colors.green[500]),
-      Icon(Icons.star, color: Colors.green[500]),
-      Icon(Icons.star, color: Colors.black),
-      Icon(Icons.star, color: Colors.black),
-    ],
-  );
+  Widget _showStars(){
+    return new Container(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.star, color: Colors.green[500], size: 12.0,),
+          Icon(Icons.star, color: Colors.green[500], size: 12.0,),
+          Icon(Icons.star, color: Colors.green[500], size: 12.0,),
+          Icon(Icons.star, color: Colors.green[500], size: 12.0,),
+          Icon(Icons.star, color: Colors.black, size: 12.0,),
+        ],
+      ),
+    );
+  }
 
-  final leftColumn = Container(
-    padding: EdgeInsets.all( 10 ),
-    child: Column(
-      children: <Widget>[
-        CircleAvatar(
-          radius: 32.0,
-          backgroundColor: Colors.red,
-        ),
-        Text(
-          'Nombre Completo',
-          style: TextStyle( color: Colors.white ),
-        ),
-        stars, // FIXME: 
-      ],
-    ),
-  );
 
-  
-
-  final rightColumn = Container(
-    padding: EdgeInsets.fromLTRB( 5, 5, 8, 5 ),
-    child: Column(
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only( right : 8.0 ),
-              child  : Icon(
-                Icons.attach_money,
-                color : Colors.greenAccent
+  // final rightColumn = Container(
+  Widget rightColumn( cotizacion, descripcion, dias, horas ) {
+    return new  Container(
+      padding: EdgeInsets.fromLTRB( 5, 5, 8, 5 ),
+      alignment: Alignment.topLeft,
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only( right : 8.0 ),
+                child  : Icon(
+                  Icons.attach_money,
+                  color : Colors.greenAccent
+                ),
               ),
-            ),
-            Text( 
-              'Hola', // cotización
-              style : TextStyle( color: Colors.white ),
-            ),
-          ],
-        ),
-        Row(
-          children: <Widget>[
-            Text(
-              'Descripción',
-              style : TextStyle( color : Colors.white60 ),
-            ),
-          ],
-        ),
-        Row(
-          children : <Widget>[
-            Column(
-              children: [
-                Icon(Icons.wb_sunny, color: Colors.green),
-                Text(
-                  'Días', 
-                  style: TextStyle(color: Colors.white54),
-                ),
-              ],
-            ), 
-            Column(
-              children: [
-                Icon(Icons.access_time, color: Colors.green),
-                Text(
-                  'Horas', 
-                  style: TextStyle(color: Colors.white54),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+              Text( 
+                '$cotizacion', // cotización
+                style : TextStyle( color: Colors.white ),
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              SizedBox( 
+                width: 150,
+                child: Text('$descripcion',
+                  style : TextStyle( color : Colors.white60 ),
+                )
+              ),
+              // Text(
+              //   '$descripcion',
+              //   maxLines: 5,
+              //   style : TextStyle( color : Colors.white60 ),
+              // ),
+            ],
+          ),
+          // Row(
+          //   children: <Widget>[
+          //     new Flexible(
+          //       child: new Column(
+          //         crossAxisAlignment: CrossAxisAlignment.start,
+          //         children: <Widget>[
+          //           Text(
+          //             '$descripcion',
+          //             style : TextStyle( color : Colors.white60 ),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          Row(
+            children : <Widget>[
+              Column(
+                children: [
+                  Icon(Icons.wb_sunny, color: Colors.green),
+                  Text(
+                    '$dias', 
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ],
+              ), 
+              Column(
+                children: [
+                  Icon(Icons.access_time, color: Colors.green),
+                  Text(
+                    '$horas', 
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
 }
