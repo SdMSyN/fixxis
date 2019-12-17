@@ -18,7 +18,8 @@ class _ViewOfertaState extends State<ViewOferta>{
           _descripcion,
           _urlImage,
           _tipoTrabajo,
-          _idOferta;
+          _idOferta,
+          _idUserContratista;
   int     _pptoIni,
           _pptoFin;
   bool    _material;
@@ -36,13 +37,14 @@ class _ViewOfertaState extends State<ViewOferta>{
         print(dataSnapShot.value);
         Map<dynamic, dynamic> values = dataSnapShot.value;
         print(values);
-        _titulo       = values["titulo"];
-        _descripcion  = values["descripcion"];
-        _urlImage     = values["urlImg"];
-        _tipoTrabajo  = values["tipoTrabajo"];
-        _pptoIni      = values["pptoIni"];
-        _pptoFin      = values["pptoFin"];
-        _material     = values["material"];
+        _titulo             = values["titulo"];
+        _descripcion        = values["descripcion"];
+        _urlImage           = values["urlImg"];
+        _tipoTrabajo        = values["tipoTrabajo"];
+        _pptoIni            = values["pptoIni"];
+        _pptoFin            = values["pptoFin"];
+        _material           = values["material"];
+        _idUserContratista  = values["userId"];
       });
     });
 
@@ -153,7 +155,7 @@ class _ViewOfertaState extends State<ViewOferta>{
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.subhead,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              // crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // three line description
                 Padding(
@@ -196,6 +198,7 @@ class _ViewOfertaState extends State<ViewOferta>{
                   _listPost[index].descripcion,
                   _listPost[index].days,
                   _listPost[index].hours,
+                  _listPost[index].idUser
                 );
             }),
         ),
@@ -203,21 +206,21 @@ class _ViewOfertaState extends State<ViewOferta>{
     );
   }
 
-  Widget _showPostulaciones( urlImgAvatar, nombre, cotizacion, descripcion, dias, horas ){
+  Widget _showPostulaciones( urlImgAvatar, nombre, cotizacion, descripcion, dias, horas, idUser ){
     // new ListView.builder(itemBuilder: (BuildContext context, int index){
       return new Container(
-        margin      : EdgeInsets.all(16.0),
+        margin      : EdgeInsets.fromLTRB(16.0, 5.0, 16.0, 5.0),
         padding     : EdgeInsets.all(3.0),
         child: Card(
           color: Colors.purple[900],
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
                 width : 130,
                 child: leftColumn( urlImgAvatar, nombre ),
               ),
-              rightColumn( cotizacion, descripcion, dias, horas ),
+              rightColumn( cotizacion, descripcion, dias, horas, nombre, idUser ),
             ],
           ), 
         ), 
@@ -266,16 +269,15 @@ class _ViewOfertaState extends State<ViewOferta>{
     );
   }
 
-
   // final rightColumn = Container(
-  Widget rightColumn( cotizacion, descripcion, dias, horas ) {
+  Widget rightColumn( cotizacion, descripcion, dias, horas, nameProfile, idUser ) {
     return new  Container(
+      width: 180,
       padding: EdgeInsets.fromLTRB( 5, 5, 8, 5 ),
-      alignment: Alignment.topLeft,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Padding(
                 padding: EdgeInsets.only( right : 8.0 ),
@@ -305,21 +307,6 @@ class _ViewOfertaState extends State<ViewOferta>{
               // ),
             ],
           ),
-          // Row(
-          //   children: <Widget>[
-          //     new Flexible(
-          //       child: new Column(
-          //         crossAxisAlignment: CrossAxisAlignment.start,
-          //         children: <Widget>[
-          //           Text(
-          //             '$descripcion',
-          //             style : TextStyle( color : Colors.white60 ),
-          //           ),
-          //         ],
-          //       ),
-          //     ),
-          //   ],
-          // ),
           Row(
             children : <Widget>[
               Column(
@@ -342,9 +329,61 @@ class _ViewOfertaState extends State<ViewOferta>{
               ),
             ],
           ),
+
+          SizedBox( width: double.infinity ),
+          Align(
+            alignment: Alignment(0.8, -1.0),
+            heightFactor: 0.4,
+            child: FloatingActionButton(
+              onPressed:(){ 
+                print("press");
+                _showContratar( nameProfile, cotizacion, idUser ); 
+              },
+              child: Icon(Icons.payment),
+              mini: true,
+            ),
+          )
         ],
       ),
     );
+  }
+
+  void _showContratar( name, costo, idUser ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: new Text("¿Deseas contratarlo?"),
+          content: new Text("Estas a punto de contratar a $name pagando la cantidad de \$$costo ¿Deseas continuar?"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Aceptar"),
+              onPressed: () {
+                _saveNewPayment( costo, idUser );
+                Navigator.of(context).pop();
+              },
+            ),
+            new FlatButton(
+              child: new Text("Cancelar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _saveNewPayment( costo, idUser ){
+    dBRef.child("pagos").push().set({
+      "idContratista": _idUserContratista, 
+      "idTrabajador" : idUser,
+      "idOferta"     : _idOferta,
+      "costo"        : costo
+    });
+    print("Guardado...");
   }
 
 }

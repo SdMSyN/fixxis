@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:async';
 import '../services/authentication.dart';
 import '../models/newOferta.dart';
 import 'create_trabajo.dart';
+import 'edit_perfil.dart';
 import 'view_oferta.dart';
 
 class HomePage extends StatefulWidget {
@@ -32,6 +34,10 @@ class _HomePageState extends State<HomePage> {
   Query _todoQuery;
 
   bool _isEmailVerified = false;
+  String  _nombre,
+          _urlImgProfile,
+          _mail,
+          _keyUser;
 
   @override
   void initState() {
@@ -48,6 +54,22 @@ class _HomePageState extends State<HomePage> {
     _onTodoAddedSubscription    = _todoQuery.onChildAdded.listen(_onEntryAdded);
     _onTodoChangedSubscription  = _todoQuery.onChildChanged.listen(_onEntryChanged);
     _idUser                     = widget.userId;
+
+    // obtenemos la información del usuario
+    _database.reference().child("user").orderByChild("id").equalTo(widget.userId).once().then((DataSnapshot dataSnapShot){
+      setState(() {
+        Map<dynamic, dynamic> values = dataSnapShot.value;
+        print("+++++++ HomePageTrabajador---InitState");
+        print(values);
+        _keyUser = values.keys.single.toString();
+        values.forEach((key, values){
+          _mail = values["correo"];
+          _urlImgProfile = ( values["urlImg"] != null ) ? values["urlImg"] : "";
+          _nombre = ( values["nombre"] != null ) ? values["nombre"] : "";
+        });
+      });
+    });
+
   }
 
   void _checkEmailVerification() async {
@@ -200,6 +222,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return new Scaffold(
         key: _scaffoldKey,
+        drawer: _drawMenu(),
         appBar: new AppBar(
           title: new Text('FIXXIS'),
           actions: <Widget>[
@@ -228,6 +251,71 @@ class _HomePageState extends State<HomePage> {
     );
     _scaffoldKey.currentState.removeCurrentSnackBar();
     _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")));
+  }
+
+  _navigatedAndDisplayPerfil(BuildContext context) async{
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser, userKey: _keyUser ) ),
+    );
+    _scaffoldKey.currentState.removeCurrentSnackBar();
+    ( result == "Atrás" ) 
+      ? _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")))
+      : _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.blue, content: Text("$result")));
+  } 
+
+  // _navigatedAndDisplayCard(BuildContext context) async{
+  //   final result = await Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => AddNewCard( userKey: _keyUser ) ),
+  //   );
+  //   _scaffoldKey.currentState.removeCurrentSnackBar();
+  //   ( result == "Atrás" ) 
+  //     ? _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("$result")))
+  //     : _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.blue, content: Text("$result")));
+  // } 
+
+  Widget _drawMenu(){
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          UserAccountsDrawerHeader(
+            accountName: ( _nombre != null && _nombre != "" ) ? Text( _nombre ) : Text("Trabajador"),
+            accountEmail: ( _mail != null ) ? Text( _mail ) : Text( "mi_correo@fixxis.com" ),
+            currentAccountPicture: new CircleAvatar(
+              backgroundColor: Colors.white,
+              child: 
+                ( _urlImgProfile != null && _urlImgProfile != "" ) 
+                  ? new CachedNetworkImage( imageUrl: _urlImgProfile ) 
+                  : new Image.asset('assets/icono_1.png'),
+            ),
+            decoration: BoxDecoration(
+              color: Colors.orangeAccent 
+            ),
+          ),
+          ListTile(
+            title: Text('Perfil'),
+            leading: Icon(Icons.settings),
+            onTap: (){
+              Navigator.of(context).pop();
+              _navigatedAndDisplayPerfil(context);
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(builder: (context) => EditPerfil( userId: _idUser, userKey: _keyUser ) ),
+              // );
+            },
+          ),
+          ListTile(
+            title: Text('Tarjeta'),
+            leading: Icon(Icons.payment),
+            onTap: (){
+              Navigator.of(context).pop();
+              // _navigatedAndDisplayCard(context);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
 }
