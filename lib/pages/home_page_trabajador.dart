@@ -4,7 +4,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:async';
 import '../services/authentication.dart';
 import '../models/newOferta.dart';
-import 'create_trabajo.dart';
 import 'view_oferta_trabajador.dart';
 import 'edit_perfil.dart';
 
@@ -236,10 +235,9 @@ class _HomePageTrabajadorState extends State<HomePageTrabajador> {
             accountEmail: ( _mail != null ) ? Text( _mail ) : Text( "mi_correo@fixxis.com" ),
             currentAccountPicture: new CircleAvatar(
               backgroundColor: Colors.white,
-              child: 
-                ( _urlImgProfile != null && _urlImgProfile != "" ) 
-                  ? new CachedNetworkImage( imageUrl: _urlImgProfile ) 
-                  : new Image.asset('assets/icono_1.png'),
+              backgroundImage: ( _urlImgProfile != null && _urlImgProfile != "" ) 
+                ? CachedNetworkImageProvider( _urlImgProfile ) 
+                : AssetImage('assets/icono_1.png') ,
             ),
             decoration: BoxDecoration(
               color: Colors.orangeAccent 
